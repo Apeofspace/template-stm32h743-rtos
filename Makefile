@@ -26,3 +26,4 @@ clean:
 flash: build
 	st-flash --reset write ${BUILD_DIR}/${OUTPUT_BIN_NAME}.bin 0x08000000
 
+
