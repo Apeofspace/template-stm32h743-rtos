@@ -35,13 +35,10 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 # ----SOURCES, HEADERS, SCRIPTS----
 file(GLOB_RECURSE C_SRC CONFIGURE_DEPENDS Src/*.c)
 
-file(GLOB_RECURSE C_LIBS CONFIGURE_DEPENDS Drivers/*.c Middlewares/*.c)
-
-# macro(HEADER_DIRECTORIES return_list) file(GLOB_RECURSE new_list
-# CONFIGURE_DEPENDS *.h) set(dir_list "") foreach(file_path ${new_list})
-# get_filename_component(dir_path ${file_path} PATH) set(dir_list ${dir_list}
-# ${dir_path}) endforeach() list(REMOVE_DUPLICATES dir_list) set(${return_list}
-# ${dir_list}) endmacro() header_directories(AUTO_INCLUDE_DIRS)
+file(GLOB_RECURSE C_LIBS CONFIGURE_DEPENDS 
+    Drivers/CMSIS/*.c 
+    Drivers/STM32H7xx_HAL_Driver/*.c 
+    Middlewares/*.c)
 
 set(INCLUDE_DIRS Inc)
 
@@ -50,26 +47,21 @@ set(INCLUDE_DIRS_LIBS
     Drivers/STM32H7xx_HAL_Driver/Inc
     Drivers/STM32H7xx_HAL_Driver/Inc/Legacy
     Drivers/CMSIS/Device/ST/STM32H7xx/Include
-    Drivers/BSP/Components/lan8742
-    Middlewares/Third_Party/FreeRTOS/Source/include
-    Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
-    Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
-    Middlewares/Third_Party/LwIP/src/include
-    Middlewares/Third_Party/LwIP/src/include/netif/ppp
-    Middlewares/Third_Party/LwIP/system
-    Middlewares/Third_Party/LwIP/src/include/lwip
-    Middlewares/Third_Party/LwIP/src/include/lwip/apps
-    Middlewares/Third_Party/LwIP/src/include/lwip/priv
-    Middlewares/Third_Party/LwIP/src/include/lwip/prot
-    Middlewares/Third_Party/LwIP/src/include/netif
-    Middlewares/Third_Party/LwIP/src/include/compat/posix
-    Middlewares/Third_Party/LwIP/src/include/compat/posix/arpa
-    Middlewares/Third_Party/LwIP/src/include/compat/posix/net
-    Middlewares/Third_Party/LwIP/src/include/compat/posix/sys
-    Middlewares/Third_Party/LwIP/src/include/compat/stdc
-    Middlewares/Third_Party/LwIP/system/arch
-    # Middlewares/Third_Party/mbedTLS/include/mbedtls
-    # Middlewares/Third_Party/mbedTLS/include
+    # Drivers/BSP/Components/lan8742
+    # Middlewares/Third_Party/LwIP/src/include
+    # Middlewares/Third_Party/LwIP/src/include/netif/ppp
+    # Middlewares/Third_Party/LwIP/system
+    # Middlewares/Third_Party/LwIP/src/include/lwip
+    # Middlewares/Third_Party/LwIP/src/include/lwip/apps
+    # Middlewares/Third_Party/LwIP/src/include/lwip/priv
+    # Middlewares/Third_Party/LwIP/src/include/lwip/prot
+    # Middlewares/Third_Party/LwIP/src/include/netif
+    # Middlewares/Third_Party/LwIP/src/include/compat/posix
+    # Middlewares/Third_Party/LwIP/src/include/compat/posix/arpa
+    # Middlewares/Third_Party/LwIP/src/include/compat/posix/net
+    # Middlewares/Third_Party/LwIP/src/include/compat/posix/sys
+    # Middlewares/Third_Party/LwIP/src/include/compat/stdc
+    # Middlewares/Third_Party/LwIP/system/arch
 )
 
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32H743ZITx_FLASH.ld)
@@ -119,6 +111,21 @@ target_link_options(${TARGET_NAME} PRIVATE ${LINK_OPTS})
 target_link_libraries(${TARGET_NAME} m)
 target_include_directories(${TARGET_NAME} PRIVATE ${INCLUDE_DIRS}
                                                   ${INCLUDE_DIRS_LIBS})
+
+# -----FREERTOS------------
+set(FREERTOS_CONFIG_H_PATH Src/freertos)
+set(FREERTOS_KERNEL_PATH Drivers/FreeRTOS-Kernel)
+set(FREERTOS_COMP_DEFS projCOVERAGE_TEST=0)
+set(FREERTOS_HEAP "4" CACHE STRING "" FORCE)
+set(FREERTOS_PORT "GCC_ARM_CM4F" CACHE STRING "" FORCE)
+
+add_library(freertos_config INTERFACE)
+target_include_directories(freertos_config INTERFACE ${FREERTOS_CONFIG_H_PATH})
+target_compile_definitions(freertos_config INTERFACE ${FREERTOS_COMP_DEFS})
+target_compile_options(freertos_config INTERFACE ${COMP_OPTS})
+
+add_subdirectory(${FREERTOS_KERNEL_PATH})
+target_link_libraries(${TARGET_NAME} freertos_kernel freertos_config)
 
 # -----BUILD TYPE-----
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
