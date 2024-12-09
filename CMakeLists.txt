@@ -48,20 +48,6 @@ set(INCLUDE_DIRS_LIBS
     Drivers/STM32H7xx_HAL_Driver/Inc/Legacy
     Drivers/CMSIS/Device/ST/STM32H7xx/Include
     # Drivers/BSP/Components/lan8742
-    # Middlewares/Third_Party/LwIP/src/include
-    # Middlewares/Third_Party/LwIP/src/include/netif/ppp
-    # Middlewares/Third_Party/LwIP/system
-    # Middlewares/Third_Party/LwIP/src/include/lwip
-    # Middlewares/Third_Party/LwIP/src/include/lwip/apps
-    # Middlewares/Third_Party/LwIP/src/include/lwip/priv
-    # Middlewares/Third_Party/LwIP/src/include/lwip/prot
-    # Middlewares/Third_Party/LwIP/src/include/netif
-    # Middlewares/Third_Party/LwIP/src/include/compat/posix
-    # Middlewares/Third_Party/LwIP/src/include/compat/posix/arpa
-    # Middlewares/Third_Party/LwIP/src/include/compat/posix/net
-    # Middlewares/Third_Party/LwIP/src/include/compat/posix/sys
-    # Middlewares/Third_Party/LwIP/src/include/compat/stdc
-    # Middlewares/Third_Party/LwIP/system/arch
 )
 
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32H743ZITx_FLASH.ld)
@@ -126,6 +112,11 @@ target_compile_options(freertos_config INTERFACE ${COMP_OPTS})
 
 add_subdirectory(${FREERTOS_KERNEL_PATH})
 target_link_libraries(${TARGET_NAME} freertos_kernel freertos_config)
+
+# -----LWIP------------
+# check included files for LwIP settings
+set(LWIP_DIR Drivers/LwIP)
+include(${LWIP_DIR}/src/Filelists.cmake)
 
 # -----BUILD TYPE-----
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
